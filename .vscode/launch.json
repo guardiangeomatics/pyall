@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [        
+        {
+            "name": "Python",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "${file}",
+            "pythonPath": "c:/python34/python.exe",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ],
+            "args": ["C:/development/python/ssl-0064-vsm3_17-20151122-175354_P_Rev2.xtf"]
+        }
+   ]
+}

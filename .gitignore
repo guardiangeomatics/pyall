@@ -53,8 +53,14 @@ coverage.xml
 *.log
 local_settings.py
 
+<<<<<<< HEAD
 # Flask instance folder
 instance/
+=======
+# Flask stuff:
+instance/
+.webassets-cache
+>>>>>>> origin/master
 
 # Scrapy stuff:
 .scrapy
@@ -86,6 +92,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
+<<<<<<< HEAD
 
 # =========================
 # Operating System Files
@@ -137,3 +144,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+=======
+>>>>>>> origin/master
