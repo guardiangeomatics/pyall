@@ -30,7 +30,9 @@ class ALLReader:
             print ("file not found:", ALLfileName)
         self.fileName = ALLfileName
         self.fileptr = open(ALLfileName, 'rb')        
-        self.fileSize = self.fileptr.seek(0, 2)
+        self.fileSize = os.path.getsize(ALLfileName)
+        # self.fileSize = self.fileptr.seek(0, 2)
+        
         # go back to start of file
         self.fileptr.seek(0, 0)                
   
@@ -167,12 +169,12 @@ class P_POSITION:
         self.Time            = s[2]
         self.Counter         = s[3]
         self.SerialNumber    = s[4]
-        self.Latitude        = float (s[5] / 20000000)
-        self.Longitude       = float (s[6] / 10000000)
-        self.Quality         = float (s[7] / 100)
-        self.SpeedOverGround = float (s[8] / 100)
-        self.CourseOverGround= float (s[9] / 100)
-        self.Heading         = float (s[10] / 100)
+        self.Latitude        = float (s[5] / float(20000000))
+        self.Longitude       = float (s[6] / float(10000000))
+        self.Quality         = float (s[7] / float(100))
+        self.SpeedOverGround = float (s[8] / float(100))
+        self.CourseOverGround= float (s[9] / float(100))
+        self.Heading         = float (s[10] / float(100))
         self.Descriptor      = s[11]
         self.NBytesDatagram  = s[12]
 
