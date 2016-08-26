@@ -10,10 +10,11 @@ pyall
 
 Done
 ====
+* now read the full 5 fields in the header so we can access the record time.  then resent the pointer so the full record can be read and parsed.  This would appear to be IO inefficient, but it is not as the OS buffers 4 k when reading
 * Basic read loop is in place.  reads datagram header and skips to next record.  THis is quick
-P = 80 P Position record decode in place
-X = 88 X Depth record decode in place.  Beam data is in a list of depths[], alongtrack[] etc instead of a beam object.  This may be more efficient?
-Tested X reader by making a waterfall image.  Results look good
+* P = 80 P Position record decode in place
+* X = 88 X Depth record decode in place.  Beam data is in a list of depths[], alongtrack[] etc instead of a beam object.  This may be more efficient?
+* Tested X reader by making a waterfall image.  Results look good
 
 
 2Do
