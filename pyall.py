@@ -4,7 +4,7 @@
 #description:   python module to read a Kongsberg ALL sonar file
 #notes:         See main at end of script for example how to use this
 #based on ALL Revision R October 2013
-#version 3.10
+#version 3.20
 
 # See readme.md for more details
 
