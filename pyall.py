@@ -34,6 +34,7 @@ class ALLReader:
         return pprint.pformat(vars(self))
 
     def currentRecordDateTime(self):
+        print "Time: " + str(self.recordDate)
         date_object = datetime.strptime(str(self.recordDate), '%Y%m%d') + timedelta(0,self.recordTime)
         return date_object
 
@@ -92,10 +93,98 @@ class ALLReader:
         elif TypeOfDatagram == 88: # X Depth
             dg = X_DEPTH(self.fileptr, NumberOfBytes)
             return dg.TypeOfDatagram, dg 
+        elif TypeOfDatagram == 68: # D DEPTH
+            dg = D_DEPTH(self.fileptr, NumberOfBytes)
+            return dg.TypeOfDatagram, dg
         else:
             self.fileptr.seek(NumberOfBytes, 1)
         return 0,0
+
+class D_DEPTH:
+    def __init__(self, fileptr, bytes):
+        self.TypeOfDatagram = 'D'
+        self.offset = fileptr.tell()
+        self.bytes = bytes
+        self.fileptr = fileptr
+        self.fileptr.seek(bytes, 1)
+    
+    def read(self):
+        self.fileptr.seek(self.offset, 0)
+        rec_fmt = '=LBBHLLHHHHHBBBBH'
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack_from
+        data = self.fileptr.read(rec_len)
+        s = rec_unpack(data)
+
+        self.NumberOfBytes   = s[0]
+        self.STX             = s[1]
+        self.TypeOfDatagram  = s[2]
+        self.EMModel         = s[3]
+        self.RecordDate      = s[4]
+        self.Time            = s[5]
+        self.Counter         = s[6]
+        self.SerialNumber    = s[7]
+        self.Heading                = float (s[8] / float (100))
+        self.SoundSpeedAtTransducer = float (s[9] / float (10))
+        self.TransducerDepth        = float (s[10] / float (100))
+        self.NBeams                 = s[11]
+        self.ZResolution            = float (s[12] / float (100))
+        self.XYResolution           = float (s[13] / float (100))
+        self.SamplingFrequency      = s[14]
+
+        self.Depth                        = [0 for i in range(self.NBeams)]
+        self.AcrossTrackDistance          = [0 for i in range(self.NBeams)]
+        self.AlongTrackDistance           = [0 for i in range(self.NBeams)]
+        self.BeamDepressionAngle          = [0 for i in range(self.NBeams)]
+        self.BeamAzimuthAngle             = [0 for i in range(self.NBeams)]
+        self.Range                        = [0 for i in range(self.NBeams)]
+        self.QualityFactor                = [0 for i in range(self.NBeams)]
+        self.LengthOfDetectionWindow      = [0 for i in range(self.NBeams)]
+        self.Reflectivity                 = [0 for i in range(self.NBeams)]
+        self.BeamNumber                   = [0 for i in range(self.NBeams)]
+
+        # now read the variable part of the Record
+        if self.EMModel < 700 :
+            rec_fmt = '=H3h2H2BbB'
+        else:
+            rec_fmt = '=4h2H2BbB'            
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack
+
+        IndexDifference = 1
+
+        for i in range(self.NBeams):
+
+            if IndexDifference > 1 and i == self.NBeams: # there are missing beams and
+                break                                    # we have reached the end
+
+            data = self.fileptr.read(rec_len)
+            s = rec_unpack(data)
+            self.Depth[i]                       = float (s[0] / float (100))
+            self.AcrossTrackDistance[i]         = float (s[1] / float (100))
+            self.AlongTrackDistance[i]          = float (s[2] / float (100))
+            self.BeamDepressionAngle[i]         = float (s[3] / float (100))
+            self.BeamAzimuthAngle[i]            = float (s[4] / float (100))
+            self.Range[i]                       = float (s[5] / float (100))
+            self.QualityFactor[i]               = s[6]
+            self.LengthOfDetectionWindow[i]     = s[7]
+            self.Reflectivity[i]                = float (s[8] / float (100))
+            self.BeamNumber[i]                  = s[9]
+
+            if (self.BeamNumber[i] - i) != IndexDifference:  # missing beam(s)
+                self.NBeams = self.NBeams - ((self.BeamNumber[i] - i) - IndexDifference)
+                IndexDifference = (self.BeamNumber[i] - i)
         
+        rec_fmt = '=bBH'
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack_from
+        data = self.fileptr.read(rec_len)
+        s = rec_unpack(data)
+
+        self.RangeMultiplier    = s[0]
+        self.ETX                = s[1]
+        self.checksum           = s[2]
+
 class X_DEPTH:
     def __init__(self, fileptr, bytes):
         self.TypeOfDatagram = 'X'
@@ -219,7 +308,7 @@ class P_POSITION:
 
 if __name__ == "__main__":
     #open the ALL file for reading by creating a new ALLReader class and passin in the filename to open.
-    filename =   "C:/development/all/sampledata/EM2040/GeoFocusEM2040400kHzdual-Rx0.5degx1degPitchStabilised.all"
+    filename =   "C:/Python27/ArcGIS10.3/pyall-master/em2000-0017-e_007-20111101-093632.all"
 
     r = ALLReader(filename)
     start_time = time.time() # time the process
@@ -231,14 +320,18 @@ if __name__ == "__main__":
         TypeOfDatagram, datagram = r.readDatagram()
         print(r.currentRecordDateTime())
 
-        # if TypeOfDatagram == 'P':
-        #     datagram.read()
-        #     # print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
-        # if TypeOfDatagram == 'X':
-        #     datagram.read()
-        #     nadirBeam = int(datagram.NBeams / 2)
-        #     print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth)))
-        #     pingCount += 1
+        if TypeOfDatagram == 'P':
+             datagram.read()
+             print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
+        if TypeOfDatagram == 'D':
+            datagram.read()
+            nadirBeam = int(datagram.NBeams / 2)
+            print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f Checksum %s" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth, datagram.checksum)))
+        if TypeOfDatagram == 'X':
+            datagram.read()
+            nadirBeam = int(datagram.NBeams / 2)
+            print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth)))
+            pingCount += 1
 
     print("Read Duration: %.3f seconds, pingCount %d" % (time.time() - start_time, pingCount)) # print the processing time. It is handy to keep an eye on processing performance.
 
