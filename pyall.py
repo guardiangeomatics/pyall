@@ -34,7 +34,8 @@ class ALLReader:
         return pprint.pformat(vars(self))
 
     def currentRecordDateTime(self):
-        print "Time: " + str(self.recordDate)
+        # print ("Date: " + str(self.recordDate))
+        # print ("Time: " + str(self.recordTime))
         date_object = datetime.strptime(str(self.recordDate), '%Y%m%d') + timedelta(0,self.recordTime)
         return date_object
 
@@ -98,7 +99,7 @@ class ALLReader:
             return dg.TypeOfDatagram, dg
         else:
             self.fileptr.seek(NumberOfBytes, 1)
-        return 0,0
+        return TypeOfDatagram,0
 
 class D_DEPTH:
     def __init__(self, fileptr, bytes):
@@ -269,6 +270,7 @@ class P_POSITION:
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack
         data = self.fileptr.read(rec_len)
+        bytesRead = rec_len
         s = rec_unpack(data)
         
         self.NumberOfBytes   = s[0]
@@ -297,6 +299,7 @@ class P_POSITION:
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack_from
         data = self.fileptr.read(rec_len)
+        bytesRead += rec_len
         s = rec_unpack(data)
         self.DatagramAsReceived = s[0].decode('utf-8').rstrip('\x00')
         if self.NBytesDatagram % 2 == 0:
@@ -305,10 +308,14 @@ class P_POSITION:
         else:        
             self.ETX                = s[1]
             self.checksum           = s[2]
+        
+        if bytesRead < self.bytes:
+            self.fileptr.read(int(self.bytes - bytesRead))
 
 if __name__ == "__main__":
     #open the ALL file for reading by creating a new ALLReader class and passin in the filename to open.
-    filename =   "C:/Python27/ArcGIS10.3/pyall-master/em2000-0017-e_007-20111101-093632.all"
+    # filename =   "C:/Python27/ArcGIS10.3/pyall-master/em2000-0017-e_007-20111101-093632.all"
+    filename =   "C:/development/Python/m3Sample.all"
 
     r = ALLReader(filename)
     start_time = time.time() # time the process
@@ -318,11 +325,12 @@ if __name__ == "__main__":
         # read a datagram.  If we support it, return the datagram type and aclass for that datagram
         # The user then needs to call the read() method for the class to undertake a fileread and binary decode.  This keeps the read super quick.
         TypeOfDatagram, datagram = r.readDatagram()
-        print(r.currentRecordDateTime())
+        # print("TypeOfDatagram:", TypeOfDatagram)
+        # print(r.currentRecordDateTime())
 
         if TypeOfDatagram == 'P':
              datagram.read()
-             print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
+            #  print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
         if TypeOfDatagram == 'D':
             datagram.read()
             nadirBeam = int(datagram.NBeams / 2)

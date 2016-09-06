@@ -5,11 +5,13 @@ pyall
 * description:   python module to read an XTF sonar file
 * notes:         See main at end of script for example how to use this
 * based on ALL file version 
-* version 1.00
+* version 1.10
 * developed for Python version 3.4 
 
 Done
 ====
+* patched print statement for python 3.x instead of only python 2.x
+* added read for trailing bytes in 'P' records for M3 sonar which appears to write imperfect records
 * now read the full 5 fields in the header so we can access the record time.  then resent the pointer so the full record can be read and parsed.  This would appear to be IO inefficient, but it is not as the OS buffers 4 k when reading
 * Basic read loop is in place.  reads datagram header and skips to next record.  THis is quick
 * P = 80 P Position record decode in place
