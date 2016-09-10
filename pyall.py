@@ -128,10 +128,11 @@ class D_DEPTH:
         self.Heading                = float (s[8] / float (100))
         self.SoundSpeedAtTransducer = float (s[9] / float (10))
         self.TransducerDepth        = float (s[10] / float (100))
-        self.NBeams                 = s[11]
-        self.ZResolution            = float (s[12] / float (100))
-        self.XYResolution           = float (s[13] / float (100))
-        self.SamplingFrequency      = s[14]
+        self.MaxBeams                 = s[11]
+        self.NBeams                 = s[12]
+        self.ZResolution            = float (s[13] / float (100))
+        self.XYResolution           = float (s[14] / float (100))
+        self.SamplingFrequency      = s[15]
 
         self.Depth                        = [0 for i in range(self.NBeams)]
         self.AcrossTrackDistance          = [0 for i in range(self.NBeams)]
@@ -152,13 +153,8 @@ class D_DEPTH:
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack
 
-        IndexDifference = 1
-
-        for i in range(self.NBeams):
-
-            if IndexDifference > 1 and i == self.NBeams: # there are missing beams and
-                break                                    # we have reached the end
-
+        i = 0
+        while i < self.NBeams:
             data = self.fileptr.read(rec_len)
             s = rec_unpack(data)
             self.Depth[i]                       = float (s[0] / float (100))
@@ -171,11 +167,8 @@ class D_DEPTH:
             self.LengthOfDetectionWindow[i]     = s[7]
             self.Reflectivity[i]                = float (s[8] / float (100))
             self.BeamNumber[i]                  = s[9]
+            i = i + 1
 
-            if (self.BeamNumber[i] - i) != IndexDifference:  # missing beam(s)
-                self.NBeams = self.NBeams - ((self.BeamNumber[i] - i) - IndexDifference)
-                IndexDifference = (self.BeamNumber[i] - i)
-        
         rec_fmt = '=bBH'
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack_from
