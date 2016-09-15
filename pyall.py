@@ -8,6 +8,7 @@
 
 # See readme.md for more details
 
+import math
 import pprint
 import struct
 import os.path
@@ -167,6 +168,14 @@ class D_DEPTH:
             self.LengthOfDetectionWindow[i]     = s[7]
             self.Reflectivity[i]                = float (s[8] / float (100))
             self.BeamNumber[i]                  = s[9]
+
+            # now do some sanity checks.  We have examples where the Depth and Across track values are NaN
+            if (math.isnan(self.Depth[i])):
+                self.Depth[i] = 0
+            if (math.isnan(self.AcrossTrackDistance[i])):
+                self.AcrossTrackDistance[i] = 0
+            if (math.isnan(self.AlongTrackDistance[i])):
+                self.AlongTrackDistance[i] = 0
             i = i + 1
 
         rec_fmt = '=bBH'
@@ -239,6 +248,14 @@ class X_DEPTH:
             self.DetectionInformation[i] = s[6]
             self.RealtimeCeaningInformation[i] =  s[7]
             self.Reflectivity[i] = float (s[8] / 10)
+
+            # now do some sanity checks.  We have examples where the Depth and Across track values are NaN
+            if (math.isnan(self.Depth[i])):
+                self.Depth[i] = 0
+            if (math.isnan(self.AcrossTrackDistance[i])):
+                self.AcrossTrackDistance[i] = 0
+            if (math.isnan(self.AlongTrackDistance[i])):
+                self.AlongTrackDistance[i] = 0
             
         rec_fmt = '=BBH'
         rec_len = struct.calcsize(rec_fmt)
@@ -308,8 +325,8 @@ class P_POSITION:
 if __name__ == "__main__":
     #open the ALL file for reading by creating a new ALLReader class and passin in the filename to open.
     # filename =   "C:/Python27/ArcGIS10.3/pyall-master/em2000-0017-e_007-20111101-093632.all"
-    filename =   "C:/development/Python/m3Sample.all"
-
+    # filename =   "C:/development/Python/m3Sample.all"
+    filename = "C:/development/python/0004_20110307_041009.all"
     r = ALLReader(filename)
     start_time = time.time() # time the process
     pingCount = 0
