@@ -1,11 +1,11 @@
 pyall
 =====
 * created:       August 2016
+* version 1.30
 * by:            p.kennedy@fugro.com
-* description:   python module to read an XTF sonar file
+* description:   python module to read an Kongsberg .ALL file
 * notes:         See main at end of script for example how to use this
 * based on ALL file version 
-* version 1.30
 * developed for Python version 3.4 
 
 Done
