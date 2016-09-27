@@ -1,10 +1,10 @@
 #name:          pyALL
+#version 3.30
 #created:       August 2016
 #by:            p.kennedy@fugro.com
 #description:   python module to read a Kongsberg ALL sonar file
 #notes:         See main at end of script for example how to use this
 #based on ALL Revision R October 2013
-#version 3.20
 
 # See readme.md for more details
 
@@ -12,10 +12,50 @@ import math
 import pprint
 import struct
 import os.path
+import time
 from datetime import datetime
 from datetime import timedelta
 # import geodetic
-import time
+
+def main():
+    #open the ALL file for reading by creating a new ALLReader class and passin in the filename to open.
+    # filename =   "C:/Python27/ArcGIS10.3/pyall-master/em2000-0017-e_007-20111101-093632.all"
+    # filename =   "C:/development/Python/m3Sample.all"
+    filename = "C:/development/python/0004_20110307_041009.all"
+    r = ALLReader(filename)
+    pingCount = 0
+    waterfall = []
+    start_time = time.time() # time the process
+
+    navigation = r.loadNavigation()
+    print("Load Navigation Duration: %.2fsecs" % (time.time() - start_time)) # time the process
+    # print (navigation)
+
+    while r.moreData():
+        # read a datagram.  If we support it, return the datagram type and aclass for that datagram
+        # The user then needs to call the read() method for the class to undertake a fileread and binary decode.  This keeps the read super quick.
+        TypeOfDatagram, datagram = r.readDatagram()
+        # print("TypeOfDatagram:", TypeOfDatagram)
+        # print(r.currentRecordDateTime())
+
+        if TypeOfDatagram == 'P':
+             datagram.read()
+            #  print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
+        if TypeOfDatagram == 'D':
+            datagram.read()
+            nadirBeam = int(datagram.NBeams / 2)
+            # print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f Checksum %s" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth, datagram.checksum)))
+        if TypeOfDatagram == 'X':
+            datagram.read()
+            # nadirBeam = int(datagram.NBeams / 2)
+            # print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth)))
+            pingCount += 1
+
+    print("Read Duration: %.3f seconds, pingCount %d" % (time.time() - start_time, pingCount)) # print the processing time. It is handy to keep an eye on processing performance.
+
+    r.rewind()
+    print("Complete reading ALL file :-)")
+    r.close()    
 
 class ALLReader:
     ALLPacketHeader_fmt = '=LBBHLL'
@@ -101,6 +141,19 @@ class ALLReader:
         else:
             self.fileptr.seek(NumberOfBytes, 1)
         return TypeOfDatagram,0
+
+    def loadNavigation(self):    
+        '''loads all the navigation into lists'''
+        navigation = []
+        self.rewind()
+        while self.moreData():
+            TypeOfDatagram, datagram = self.readDatagram()
+            if (TypeOfDatagram == 'P'):
+                datagram.read()
+                navigation.append([datagram.Time, datagram.Latitude, datagram.Longitude])
+        self.rewind()
+        return navigation
+
 
 class D_DEPTH:
     def __init__(self, fileptr, bytes):
@@ -229,10 +282,10 @@ class X_DEPTH:
         self.QualityFactor                = [0 for i in range(self.NBeams)]
         self.BeamIncidenceAngleAdjustment = [0 for i in range(self.NBeams)]
         self.DetectionInformation         = [0 for i in range(self.NBeams)]
-        self.RealtimeCeaningInformation   = [0 for i in range(self.NBeams)]
+        self.RealtimeCleaningInformation   = [0 for i in range(self.NBeams)]
         self.Reflectivity                 = [0 for i in range(self.NBeams)]
 
-        # now read the variable part of the Record
+        # # now read the variable part of the Record
         rec_fmt = '=fffHBBBbh'            
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack
@@ -246,7 +299,7 @@ class X_DEPTH:
             self.QualityFactor[i] =  s[4]
             self.BeamIncidenceAngleAdjustment[i] =  float (s[5] / 10)
             self.DetectionInformation[i] = s[6]
-            self.RealtimeCeaningInformation[i] =  s[7]
+            self.RealtimeCleaningInformation[i] =  s[7]
             self.Reflectivity[i] = float (s[8] / 10)
 
             # now do some sanity checks.  We have examples where the Depth and Across track values are NaN
@@ -256,7 +309,7 @@ class X_DEPTH:
                 self.AcrossTrackDistance[i] = 0
             if (math.isnan(self.AlongTrackDistance[i])):
                 self.AlongTrackDistance[i] = 0
-            
+
         rec_fmt = '=BBH'
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack_from
@@ -268,18 +321,18 @@ class X_DEPTH:
 
 class P_POSITION:
     def __init__(self, fileptr, bytes):
-        self.TypeOfDatagram = 'P'
-        self.offset = fileptr.tell()
-        self.bytes = bytes
-        self.fileptr = fileptr
-        self.fileptr.seek(bytes, 1)
+        self.TypeOfDatagram = 'P'       # assign the KM code for this datagram type
+        self.offset = fileptr.tell()    # remember where this packet resides in the file so we can return if needed
+        self.bytes = bytes              # remember how many bytes this packet contains
+        self.fileptr = fileptr          # remember the file pointer so we do not need to pass from the host process
+        self.fileptr.seek(bytes, 1)     # move the file pointer to the end of the record so we can skip as the default actions
 
     def read(self):        
-        self.fileptr.seek(self.offset, 0)                
+        self.fileptr.seek(self.offset, 0)   # move the file pointer to the start of the record so we can read from disc              
         rec_fmt = '=LBBHLLHHll4HBB'
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack
-        data = self.fileptr.read(rec_len)
+        data = self.fileptr.read(rec_len)   # read the record from disc
         bytesRead = rec_len
         s = rec_unpack(data)
         
@@ -319,40 +372,9 @@ class P_POSITION:
             self.ETX                = s[1]
             self.checksum           = s[2]
         
+        #read any trailing bytes.  We have seen the need for this with some .all files.
         if bytesRead < self.bytes:
             self.fileptr.read(int(self.bytes - bytesRead))
 
 if __name__ == "__main__":
-    #open the ALL file for reading by creating a new ALLReader class and passin in the filename to open.
-    # filename =   "C:/Python27/ArcGIS10.3/pyall-master/em2000-0017-e_007-20111101-093632.all"
-    # filename =   "C:/development/Python/m3Sample.all"
-    filename = "C:/development/python/0004_20110307_041009.all"
-    r = ALLReader(filename)
-    start_time = time.time() # time the process
-    pingCount = 0
-    waterfall = []
-    while r.moreData():
-        # read a datagram.  If we support it, return the datagram type and aclass for that datagram
-        # The user then needs to call the read() method for the class to undertake a fileread and binary decode.  This keeps the read super quick.
-        TypeOfDatagram, datagram = r.readDatagram()
-        # print("TypeOfDatagram:", TypeOfDatagram)
-        # print(r.currentRecordDateTime())
-
-        if TypeOfDatagram == 'P':
-             datagram.read()
-            #  print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
-        if TypeOfDatagram == 'D':
-            datagram.read()
-            nadirBeam = int(datagram.NBeams / 2)
-            print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f Checksum %s" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth, datagram.checksum)))
-        if TypeOfDatagram == 'X':
-            datagram.read()
-            nadirBeam = int(datagram.NBeams / 2)
-            print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth)))
-            pingCount += 1
-
-    print("Read Duration: %.3f seconds, pingCount %d" % (time.time() - start_time, pingCount)) # print the processing time. It is handy to keep an eye on processing performance.
-
-    r.rewind()
-    print("Complete reading ALL file :-)")
-    r.close()    
+        main()

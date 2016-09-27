@@ -5,11 +5,13 @@ pyall
 * description:   python module to read an XTF sonar file
 * notes:         See main at end of script for example how to use this
 * based on ALL file version 
-* version 1.20
+* version 1.30
 * developed for Python version 3.4 
 
 Done
 ====
+* added loadNavigation method which reads all nav into a list
+* trialled some struct speed-ups.  no success
 * patched D decode to simplify and repair missing field (MaxBeams)
 * patched print statement for python 3.x instead of only python 2.x
 * added read for trailing bytes in 'P' records for M3 sonar which appears to write imperfect records
