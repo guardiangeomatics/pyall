@@ -24,11 +24,10 @@ def main():
     filename = "C:/development/python/0004_20110307_041009.all"
     r = ALLReader(filename)
     pingCount = 0
-    waterfall = []
     start_time = time.time() # time the process
 
     navigation = r.loadNavigation()
-    print("Load Navigation Duration: %.2fsecs" % (time.time() - start_time)) # time the process
+    print("Load Navigation Duration: %.2fs" % (time.time() - start_time)) # time the process
     # print (navigation)
 
     while r.moreData():
