@@ -51,7 +51,6 @@
 import math
 import numpy as np
 
-
 def medfilt (x, k):
     """Apply a length-k median filter to a 1D array x.
     Boundaries are extended by repeating endpoints.
@@ -270,12 +269,12 @@ def calculateGeographicalPositionFromRangeBearing(latitude1, longitude1, alpha1T
                 last_sigma = sigma
                 sigma = (s / (b * A)) + delta_sigma
 
-        latitude2 = math.atan2 ( (math.sin(U1) * math.cos(sigma) + math.cos(U1) * math.sin(sigma) * math.cos(alpha1Tp2) ), \
+        latitude2 = math.atan2 ( (math.sin(U1) * math.cos(sigma) + math.cos(U1) * math.sin(sigma) * math.cos(alpha1To2) ), \
                 ((1-f) * math.sqrt( math.pow(Sinalpha, 2) +  \
-                pow(math.sin(U1) * math.sin(sigma) - math.cos(U1) * math.cos(sigma) * math.cos(alpha1Tp2), 2))))
+                pow(math.sin(U1) * math.sin(sigma) - math.cos(U1) * math.cos(sigma) * math.cos(alpha1To2), 2))))
 
-        lembda = math.atan2( (math.sin(sigma) * math.sin(alpha1Tp2 )), (math.cos(U1) * math.cos(sigma) -  \
-                math.sin(U1) *  math.sin(sigma) * math.cos(alpha1Tp2)))
+        lembda = math.atan2( (math.sin(sigma) * math.sin(alpha1To2 )), (math.cos(U1) * math.cos(sigma) -  \
+                math.sin(U1) *  math.sin(sigma) * math.cos(alpha1To2)))
 
         C = (f/16) * cosalpha_sq * (4 + f * (4 - 3 * cosalpha_sq ))
 
@@ -286,7 +285,7 @@ def calculateGeographicalPositionFromRangeBearing(latitude1, longitude1, alpha1T
         longitude2 = longitude1 + omega
 
         alpha21 = math.atan2 ( Sinalpha, (-math.sin(U1) * math.sin(sigma) +  \
-                math.cos(U1) * math.cos(sigma) * math.cos(alpha1Tp2)))
+                math.cos(U1) * math.cos(sigma) * math.cos(alpha1To2)))
 
         alpha21 = alpha21 + two_pi / 2.0
         if ( alpha21 < 0.0 ) :

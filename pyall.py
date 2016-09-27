@@ -74,8 +74,6 @@ class ALLReader:
         return pprint.pformat(vars(self))
 
     def currentRecordDateTime(self):
-        # print ("Date: " + str(self.recordDate))
-        # print ("Time: " + str(self.recordTime))
         date_object = datetime.strptime(str(self.recordDate), '%Y%m%d') + timedelta(0,self.recordTime)
         return date_object
 
@@ -144,12 +142,17 @@ class ALLReader:
     def loadNavigation(self):    
         '''loads all the navigation into lists'''
         navigation = []
+        selectedPositioningSystem = None
         self.rewind()
         while self.moreData():
             TypeOfDatagram, datagram = self.readDatagram()
             if (TypeOfDatagram == 'P'):
                 datagram.read()
-                navigation.append([datagram.Time, datagram.Latitude, datagram.Longitude])
+                recDate = self.currentRecordDateTime()
+                if (selectedPositioningSystem == None):
+                    selectedPositioningSystem = datagram.Descriptor
+                if (selectedPositioningSystem == datagram.Descriptor):
+                    navigation.append([recDate.timestamp(), datagram.Latitude, datagram.Longitude])
         self.rewind()
         return navigation
 
