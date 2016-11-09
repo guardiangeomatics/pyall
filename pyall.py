@@ -39,6 +39,7 @@ def main():
 
         if TypeOfDatagram == 'I':
              datagram.read()
+             print (datagram.installationParameters)
             #  print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
         if TypeOfDatagram == 'D':
             datagram.read()
