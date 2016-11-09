@@ -406,7 +406,7 @@ class I_INSTALLATION:
         self.SerialNumber    = s[7]
         self.SecondarySerialNumber = s[8]
 
-        totalAsciiBytes = self.bytes - rec_len; # 14 bytes between start of date section and ascii section
+        totalAsciiBytes = self.bytes - rec_len; # we do not need to read the header twice
         data = self.fileptr.read(totalAsciiBytes)   # read the record from disc
         bytesRead = bytesRead + totalAsciiBytes 
         parameters = data.decode('utf-8', errors="ignore").split(",")
