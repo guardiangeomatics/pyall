@@ -26,8 +26,8 @@ def main():
     pingCount = 0
     start_time = time.time() # time the process
 
-    navigation = r.loadNavigation()
-    print("Load Navigation Duration: %.2fs" % (time.time() - start_time)) # time the process
+    # navigation = r.loadNavigation()
+    # print("Load Navigation Duration: %.2fs" % (time.time() - start_time)) # time the process
     # print (navigation)
 
     while r.moreData():
@@ -37,7 +37,7 @@ def main():
         # print("TypeOfDatagram:", TypeOfDatagram)
         # print(r.currentRecordDateTime())
 
-        if TypeOfDatagram == 'P':
+        if TypeOfDatagram == 'I':
              datagram.read()
             #  print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
         if TypeOfDatagram == 'D':
@@ -125,7 +125,8 @@ class ALLReader:
         NumberOfBytes, STX, TypeOfDatagram, EMModel, RecordDate, RecordTime = self.readDatagramHeader()
         if TypeOfDatagram == 73: # I Installation 
             # create a class for this datagram, but only decode if the resulting class is called by the user.  This makes it much faster
-            self.fileptr.seek(NumberOfBytes, 1)
+            dg = I_INSTALLATION(self.fileptr, NumberOfBytes)
+            return dg.TypeOfDatagram, dg 
         elif TypeOfDatagram == 80: # P Position
             dg = P_POSITION(self.fileptr, NumberOfBytes)
             return dg.TypeOfDatagram, dg 
@@ -374,6 +375,47 @@ class P_POSITION:
             self.ETX                = s[1]
             self.checksum           = s[2]
         
+        #read any trailing bytes.  We have seen the need for this with some .all files.
+        if bytesRead < self.bytes:
+            self.fileptr.read(int(self.bytes - bytesRead))
+
+class I_INSTALLATION:
+    def __init__(self, fileptr, bytes):
+        self.TypeOfDatagram = 'I'       # assign the KM code for this datagram type
+        self.offset = fileptr.tell()    # remember where this packet resides in the file so we can return if needed
+        self.bytes = bytes              # remember how many bytes this packet contains
+        self.fileptr = fileptr          # remember the file pointer so we do not need to pass from the host process
+        self.fileptr.seek(bytes, 1)     # move the file pointer to the end of the record so we can skip as the default actions
+
+    def read(self):        
+        self.fileptr.seek(self.offset, 0)   # move the file pointer to the start of the record so we can read from disc              
+        rec_fmt = '=LBBHLL3H'
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack
+        data = self.fileptr.read(rec_len)   # read the record from disc
+        bytesRead = rec_len
+        s = rec_unpack(data)
+        
+        self.NumberOfBytes   = s[0]
+        self.STX             = s[1]
+        self.TypeOfDatagram  = s[2]
+        self.EMModel         = s[3]
+        self.RecordDate      = s[4]
+        self.Time            = s[5]
+        self.SurveyLineNumber= s[6]
+        self.SerialNumber    = s[7]
+        self.SecondarySerialNumber = s[8]
+
+        totalAsciiBytes = self.bytes - rec_len; # 14 bytes between start of date section and ascii section
+        data = self.fileptr.read(totalAsciiBytes)   # read the record from disc
+        bytesRead = bytesRead + totalAsciiBytes 
+        parameters = data.decode('utf-8', errors="ignore").split(",")
+        installationParameters = {}
+        for p in parameters:
+            parts = p.split("=")
+            if len(parts) > 1:
+                installationParameters[parts[0]] = parts[1].strip()
+
         #read any trailing bytes.  We have seen the need for this with some .all files.
         if bytesRead < self.bytes:
             self.fileptr.read(int(self.bytes - bytesRead))

@@ -13,7 +13,7 @@
                 "WaitOnNormalExit",
                 "RedirectOutput"
             ],
-            "args": ["C:/development/all/sampledata/EM2040/GeoFocusEM2040400kHzdual-Rx0.5degx1degPitchStabilised.all"]
+            "args": ["C:/development/python/0004_20110307_041009.all"]
         }
    ]
 }
