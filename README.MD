@@ -10,6 +10,7 @@ pyall
 
 Done
 ====
+* added support for I installation datagram into a key/value pair
 * added loadNavigation method which reads all nav into a list
 * trialled some struct speed-ups.  no success
 * patched D decode to simplify and repair missing field (MaxBeams)

@@ -1,5 +1,5 @@
 #name:          pyALL
-#version 3.30
+#version 3.40
 #created:       August 2016
 #by:            p.kennedy@fugro.com
 #description:   python module to read a Kongsberg ALL sonar file
@@ -410,11 +410,11 @@ class I_INSTALLATION:
         data = self.fileptr.read(totalAsciiBytes)   # read the record from disc
         bytesRead = bytesRead + totalAsciiBytes 
         parameters = data.decode('utf-8', errors="ignore").split(",")
-        installationParameters = {}
+        self.installationParameters = {}
         for p in parameters:
             parts = p.split("=")
             if len(parts) > 1:
-                installationParameters[parts[0]] = parts[1].strip()
+                self.installationParameters[parts[0]] = parts[1].strip()
 
         #read any trailing bytes.  We have seen the need for this with some .all files.
         if bytesRead < self.bytes:
