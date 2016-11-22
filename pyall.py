@@ -94,22 +94,25 @@ class ALLReader:
         return bytesRemaining
             
     def readDatagramHeader(self):
-        curr = self.fileptr.tell()
-        data = self.fileptr.read(self.ALLPacketHeader_len)
-        s = self.ALLPacketHeader_unpack(data)
+        try:
+            curr = self.fileptr.tell()
+            data = self.fileptr.read(self.ALLPacketHeader_len)
+            s = self.ALLPacketHeader_unpack(data)
 
-        NumberOfBytes   = s[0]
-        STX             = s[1]
-        TypeOfDatagram  = s[2]
-        EMModel         = s[3]
-        RecordDate      = s[4]
-        RecordTime      = s[5] / 1000
-        self.recordDate = RecordDate
-        self.recordTime = RecordTime
+            NumberOfBytes   = s[0]
+            STX             = s[1]
+            TypeOfDatagram  = s[2]
+            EMModel         = s[3]
+            RecordDate      = s[4]
+            RecordTime      = s[5] / 1000
+            self.recordDate = RecordDate
+            self.recordTime = RecordTime
 
-        # now reset file pointer
-        self.fileptr.seek(curr, 0)                
-        return NumberOfBytes + 4, STX, TypeOfDatagram, EMModel, RecordDate, RecordTime
+            # now reset file pointer
+            self.fileptr.seek(curr, 0)
+            return NumberOfBytes + 4, STX, TypeOfDatagram, EMModel, RecordDate, RecordTime
+        except struct.error:
+            return 0,0,0,0,0,0
 
     def getRecordCount(self):
         count = 0

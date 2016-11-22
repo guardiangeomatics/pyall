@@ -1,7 +1,7 @@
 pyall
 =====
 * created:          August 2016
-* version           1.30
+* version           1.40
 * by:               p.kennedy@fugro.com
 * description:      python module to read an Kongsberg .ALL file
 * notes:            See main at end of script for example how to use this
@@ -10,18 +10,18 @@ pyall
 
 Done
 ====
-* added support for I installation datagram into a key/value pair
-* added loadNavigation method which reads all nav into a list
-* trialled some struct speed-ups.  no success
-* patched D decode to simplify and repair missing field (MaxBeams)
-* patched print statement for python 3.x instead of only python 2.x
-* added read for trailing bytes in 'P' records for M3 sonar which appears to write imperfect records
+* Added error trap for reading a corrupt .all file
+* Added support for I installation datagram into a key/value pair
+* Added loadNavigation method which reads all nav into a list
+* Trialled some struct speed-ups.  no success
+* Patched D decode to simplify and repair missing field (MaxBeams)
+* Patched print statement for python 3.x instead of only python 2.x
+* Added read for trailing bytes in 'P' records for M3 sonar which appears to write imperfect records
 * now read the full 5 fields in the header so we can access the record time.  then resent the pointer so the full record can be read and parsed.  This would appear to be IO inefficient, but it is not as the OS buffers 4 k when reading
 * Basic read loop is in place.  reads datagram header and skips to next record.  THis is quick
 * P = 80 P Position record decode in place
 * X = 88 X Depth record decode in place.  Beam data is in a list of depths[], alongtrack[] etc instead of a beam object.  This may be more efficient?
 * Tested X reader by making a waterfall image.  Results look good
-
 
 2Do
 ===
