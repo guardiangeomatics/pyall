@@ -1,7 +1,7 @@
 pyall
 =====
 * created:          August 2016
-* version           1.40
+* version           1.50
 * by:               p.kennedy@fugro.com
 * description:      python module to read an Kongsberg .ALL file
 * notes:            See main at end of script for example how to use this
@@ -10,6 +10,7 @@ pyall
 
 Done
 ====
+* Added backward support for python 2.7.  Needed to add support for timestamp as this was only availble in python 3.4   
 * Added error trap for reading a corrupt .all file
 * Added support for I installation datagram into a key/value pair
 * Added loadNavigation method which reads all nav into a list

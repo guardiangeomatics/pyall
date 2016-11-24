@@ -1,5 +1,4 @@
 #name:          pyALL
-#version 3.40
 #created:       August 2016
 #by:            p.kennedy@fugro.com
 #description:   python module to read a Kongsberg ALL sonar file
@@ -15,6 +14,7 @@ import os.path
 import time
 from datetime import datetime
 from datetime import timedelta
+# from datetime import timezone
 # import geodetic
 
 def main():
@@ -157,7 +157,10 @@ class ALLReader:
                 if (selectedPositioningSystem == None):
                     selectedPositioningSystem = datagram.Descriptor
                 if (selectedPositioningSystem == datagram.Descriptor):
-                    navigation.append([recDate.timestamp(), datagram.Latitude, datagram.Longitude])
+                    # for python 2.7
+                    navigation.append([to_timestamp(recDate), datagram.Latitude, datagram.Longitude])
+                    # for python 3.4
+                    # navigation.append([recDate.timestamp(), datagram.Latitude, datagram.Longitude])
         self.rewind()
         return navigation
 
@@ -423,6 +426,12 @@ class I_INSTALLATION:
         #read any trailing bytes.  We have seen the need for this with some .all files.
         if bytesRead < self.bytes:
             self.fileptr.read(int(self.bytes - bytesRead))
+
+def to_timestamp(recordDate):
+    return (recordDate - datetime(1970, 1, 1)).total_seconds()
+
+def from_timestamp(unixtime):
+    return datetime(1970, 1 ,1) + timedelta(unixtime)
 
 if __name__ == "__main__":
         main()
