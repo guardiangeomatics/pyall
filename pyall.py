@@ -451,6 +451,7 @@ class N_TRAVELTIME:
         rec_unpack = struct.Struct(rec_fmt).unpack
         for i in range(self.NumTransitSector):
             data = self.fileptr.read(rec_len)
+            bytesRead += rec_len
             s = rec_unpack(data)
             self.TiltAngle[i] = float (s[0]) / float (100)
             self.FocusRange[i] =  s[1]
@@ -468,6 +469,7 @@ class N_TRAVELTIME:
         rx_rec_unpack = struct.Struct(rx_rec_fmt).unpack
         for i in range(self.NumReceiveBeams):
             data = self.fileptr.read(rx_rec_len)
+            bytesRead += rx_rec_len
             rx_s = rx_rec_unpack(data)
             self.BeamPointingAngle[i] = float (rx_s[0]) / float (100)
             self.TransmitSectorNumber[i] = rx_s[1]
@@ -478,7 +480,16 @@ class N_TRAVELTIME:
             self.TwoWayTravelTime[i] = float (rx_s[6])
             self.Reflectivity[i] = rx_s[7]
             self.RealtimeCleaningInformation[i] = rx_s[8]
-            self.Spare[i] = rx_s[9]
+            self.Spare[i]                       = rx_s[9]
+        
+        rec_fmt = '=BBH'
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack_from
+        data = self.fileptr.read(rec_len)
+        s = rec_unpack(data)
+            
+        self.ETX                = s[1]
+        self.checksum           = s[2]
 
 class I_INSTALLATION:
     def __init__(self, fileptr, bytes):
