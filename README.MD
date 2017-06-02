@@ -10,6 +10,7 @@ pyall
 
 Done
 ====
+* Added decode for N (travel time) records
 * Added backward support for python 2.7.  Needed to add support for timestamp as this was only availble in python 3.4   
 * Added error trap for reading a corrupt .all file
 * Added support for I installation datagram into a key/value pair
@@ -26,7 +27,6 @@ Done
 
 2Do
 ===
-D = 68
 E = 69
 F = 70
 G = 71
@@ -36,7 +36,6 @@ J = 74
 K = 75
 L = 76
 M = 77
-N = 78
 O = 79
 Q = 81
 R = 82
