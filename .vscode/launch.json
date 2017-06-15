@@ -7,7 +7,7 @@
             "request": "launch",
             "stopOnEntry": false,
             "program": "${file}",
-            "pythonPath": "c:/python27/ArcGIS10.4/python.exe",
+            "pythonPath": "python.exe",
             "debugOptions": [
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit",

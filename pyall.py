@@ -22,6 +22,7 @@ def main():
     filename =   "C:/Python27/ArcGIS10.3/pyall-master/0314_20170421_222154_SA1702-FE_302.all"
     # filename =   "C:/development/Python/m3Sample.all"
     # filename = "C:/development/python/0004_20110307_041009.all"
+    filename = "C:/development/python/0000_20160618_003722_Yolla.all"
     r = ALLReader(filename)
     pingCount = 0
     start_time = time.time() # time the process
@@ -147,7 +148,9 @@ class ALLReader:
             dg = D_DEPTH(self.fileptr, NumberOfBytes)
             return dg.TypeOfDatagram, dg
         else:
-            self.fileptr.seek(NumberOfBytes, 1)
+            dg = UNKNOWN_RECORD(self.fileptr, NumberOfBytes)
+            return dg.TypeOfDatagram, dg
+            # self.fileptr.seek(NumberOfBytes, 1)
         return TypeOfDatagram,0
 
     def loadNavigation(self):    
@@ -170,7 +173,17 @@ class ALLReader:
         self.rewind()
         return navigation
 
-
+class UNKNOWN_RECORD:
+    def __init__(self, fileptr, bytes):
+        self.TypeOfDatagram = 'U'
+        self.offset = fileptr.tell()
+        self.bytes = bytes
+        self.fileptr = fileptr
+        self.fileptr.seek(bytes, 1)
+        self.data = ""
+    def read(self):
+        self.data = self.fileptr.read(self.NumberOfBytes)
+    
 class D_DEPTH:
     def __init__(self, fileptr, bytes):
         self.TypeOfDatagram = 'D'
@@ -178,14 +191,15 @@ class D_DEPTH:
         self.bytes = bytes
         self.fileptr = fileptr
         self.fileptr.seek(bytes, 1)
+        self.data = ""
     
     def read(self):
         self.fileptr.seek(self.offset, 0)
         rec_fmt = '=LBBHLLHHHHHBBBBH'
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack_from
-        data = self.fileptr.read(rec_len)
-        s = rec_unpack(data)
+        self.data = self.fileptr.read(rec_len)
+        s = rec_unpack(self.data)
 
         self.NumberOfBytes   = s[0]
         self.STX             = s[1]
@@ -264,14 +278,15 @@ class X_DEPTH:
         self.bytes = bytes
         self.fileptr = fileptr
         self.fileptr.seek(bytes, 1)
+        self.data = ""
 
     def read(self):        
         self.fileptr.seek(self.offset, 0)                
         rec_fmt = '=LBBHLL4Hf2Hf4B'
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack_from
-        data = self.fileptr.read(rec_len)
-        s = rec_unpack(data)
+        self.data = self.fileptr.read(rec_len)
+        s = rec_unpack(self.data)
 
         self.NumberOfBytes   = s[0]
         self.STX             = s[1]
@@ -342,15 +357,16 @@ class P_POSITION:
         self.bytes = bytes              # remember how many bytes this packet contains
         self.fileptr = fileptr          # remember the file pointer so we do not need to pass from the host process
         self.fileptr.seek(bytes, 1)     # move the file pointer to the end of the record so we can skip as the default actions
+        self.data = ""
 
     def read(self):        
         self.fileptr.seek(self.offset, 0)   # move the file pointer to the start of the record so we can read from disc              
         rec_fmt = '=LBBHLLHHll4HBB'
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack
-        data = self.fileptr.read(rec_len)   # read the record from disc
+        self.data = self.fileptr.read(rec_len)   # read the record from disc
         bytesRead = rec_len
-        s = rec_unpack(data)
+        s = rec_unpack(self.data)
         
         self.NumberOfBytes   = s[0]
         self.STX             = s[1]
@@ -399,15 +415,16 @@ class N_TRAVELTIME:
         self.bytes = bytes
         self.fileptr = fileptr
         self.fileptr.seek(bytes, 1)
+        self.data = ""
 
     def read(self):
         self.fileptr.seek(self.offset, 0)
         rec_fmt = '=LBBHLLHHHHHHfL'
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack
-        data = self.fileptr.read(rec_len)
+        self.data = self.fileptr.read(rec_len)
         bytesRead = rec_len
-        s = rec_unpack(data)
+        s = rec_unpack(self.data)
 
         self.NumberOfBytes   = s[0]
         self.STX             = s[1]
@@ -498,15 +515,16 @@ class I_INSTALLATION:
         self.bytes = bytes              # remember how many bytes this packet contains
         self.fileptr = fileptr          # remember the file pointer so we do not need to pass from the host process
         self.fileptr.seek(bytes, 1)     # move the file pointer to the end of the record so we can skip as the default actions
+        self.data = ""
 
     def read(self):        
         self.fileptr.seek(self.offset, 0)   # move the file pointer to the start of the record so we can read from disc              
         rec_fmt = '=LBBHLL3H'
         rec_len = struct.calcsize(rec_fmt)
         rec_unpack = struct.Struct(rec_fmt).unpack
-        data = self.fileptr.read(rec_len)   # read the record from disc
+        self.data = self.fileptr.read(rec_len)   # read the record from disc
         bytesRead = rec_len
-        s = rec_unpack(data)
+        s = rec_unpack(self.data)
         
         self.NumberOfBytes   = s[0]
         self.STX             = s[1]

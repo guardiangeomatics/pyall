@@ -10,6 +10,8 @@ pyall
 
 Done
 ====
+* Added functionality for 'U' UNKNOWN_RECORD so we handle all records in an identical manner
+* Added functionality to return 'data' property for each class so we can access raw bytes
 * Added decode for N (travel time) records
 * Added backward support for python 2.7.  Needed to add support for timestamp as this was only availble in python 3.4   
 * Added error trap for reading a corrupt .all file
