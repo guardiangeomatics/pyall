@@ -10,6 +10,7 @@ pyall
 
 Done
 ====
+* Added method to read rawbytes for an entire datagram including header.  This is needed to exclude datagrams when conditioning files.
 * Added functionality for 'U' UNKNOWN_RECORD so we handle all records in an identical manner
 * Added functionality to return 'data' property for each class so we can access raw bytes
 * Added decode for N (travel time) records

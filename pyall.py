@@ -117,6 +117,13 @@ class ALLReader:
             return NumberOfBytes + 4, STX, TypeOfDatagram, EMModel, RecordDate, RecordTime
         except struct.error:
             return 0,0,0,0,0,0
+    
+    def readDatagramBytes(self, offset, byteCount):
+        curr = self.fileptr.tell()
+        self.fileptr.seek(offset, 0)   # move the file pointer to the start of the record so we can read from disc              
+        data = self.fileptr.read(byteCount)
+        self.fileptr.seek(curr, 0)
+        return data
 
     def getRecordCount(self):
         count = 0
@@ -148,10 +155,10 @@ class ALLReader:
             dg = D_DEPTH(self.fileptr, NumberOfBytes)
             return dg.TypeOfDatagram, dg
         else:
-            dg = UNKNOWN_RECORD(self.fileptr, NumberOfBytes)
+            dg = UNKNOWN_RECORD(self.fileptr, NumberOfBytes, TypeOfDatagram)
             return dg.TypeOfDatagram, dg
             # self.fileptr.seek(NumberOfBytes, 1)
-        return TypeOfDatagram,0
+            # return chr(TypeOfDatagram),0
 
     def loadNavigation(self):    
         '''loads all the navigation into lists'''
@@ -174,15 +181,15 @@ class ALLReader:
         return navigation
 
 class UNKNOWN_RECORD:
-    def __init__(self, fileptr, bytes):
-        self.TypeOfDatagram = 'U'
+    def __init__(self, fileptr, bytes, typeOfDatagram):
+        self.TypeOfDatagram = chr(typeOfDatagram)
         self.offset = fileptr.tell()
         self.bytes = bytes
         self.fileptr = fileptr
         self.fileptr.seek(bytes, 1)
         self.data = ""
     def read(self):
-        self.data = self.fileptr.read(self.NumberOfBytes)
+        self.data = self.fileptr.read(self.bytes)
     
 class D_DEPTH:
     def __init__(self, fileptr, bytes):
