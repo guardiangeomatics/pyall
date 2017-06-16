@@ -180,6 +180,79 @@ class ALLReader:
         self.rewind()
         return navigation
 
+    def getDatagramName(typeOfDatagram):
+
+        #Multibeam Data
+        if (TypeOfDatagram == 'D'):
+            return "D_Depth"
+        if (TypeOfDatagram == 'X'):
+            return "XYZ_Depth"
+        if (TypeOfDatagram == 'K'):
+            return "K_CentralBeam"
+        if (TypeOfDatagram == 'F'):
+            return "F_RawRange"
+        if (TypeOfDatagram == 'f'):
+            return "f_RawRange"
+        if (TypeOfDatagram == 'N'):
+            return "N_RawRange"
+        if (TypeOfDatagram == 'S'):
+            return "S_SeabedImage"
+        if (TypeOfDatagram == 'Y'):
+            return "Y_SeabedImage"
+        if (TypeOfDatagram == 'k'):
+            return "k_WaterColumn"
+        if (TypeOfDatagram == 'O'):
+            return "O_QualityFactor"
+
+        # ExternalSensors
+        if (TypeOfDatagram == 'A'):
+            return "A_Attitude"
+        if (TypeOfDatagram == 'n'):
+            return "network_Attitude"
+        if (TypeOfDatagram == 'C'):
+            return "C_Clock"
+        if (TypeOfDatagram == 'h'):
+            return "h_Height"
+        if (TypeOfDatagram == 'H'):
+            return "H_Heading"
+        if (TypeOfDatagram == 'P'):
+            return "P_Position"
+        if (TypeOfDatagram == 'E'):
+            return "E_SingleBeam"
+        if (TypeOfDatagram == 'T'):
+            return "T_Tide"
+
+        # SoundSpeed
+        if (TypeOfDatagram == 'G'):
+            return "G_SpeedSoundAtHead"
+        if (TypeOfDatagram == 'U'):
+            return "U_SpeedSoundProfile"
+        if (TypeOfDatagram == 'W'):
+            return "W_SpeedSOundProfileUsed"
+
+        # Multibeam parameters       
+        if (TypeOfDatagram == 'I'):
+            return "I_Installation_Start"
+        if (TypeOfDatagram == 'i'):
+            return "i_Installation_Stop"
+        if (TypeOfDatagram == R):
+            return "R_Runtime"
+        if (TypeOfDatagram == J):
+            return "J_TransducerTilt"
+        if (TypeOfDatagram == '3'):
+            return "3_ExtraParameters"
+
+        # PU information and status
+        if (TypeOfDatagram == '0'):
+            return "0_PU_ID"
+        if (TypeOfDatagram == '1'):
+            return "1_PU_Status"
+        if (TypeOfDatagram == 'B'):
+            return "B_BIST_Result"
+
+
+
+
 class UNKNOWN_RECORD:
     def __init__(self, fileptr, bytes, typeOfDatagram):
         self.TypeOfDatagram = chr(typeOfDatagram)
