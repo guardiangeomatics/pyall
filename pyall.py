@@ -42,6 +42,10 @@ def main():
              datagram.read()
              print (datagram.installationParameters)
             #  print ("Lat: %.5f Lon: %.5f" % (datagram.Latitude, datagram.Longitude))
+        if TypeOfDatagram == 'A':
+            datagram.read()
+        if TypeOfDatagram == 'n':
+            datagram.read()
         if TypeOfDatagram == 'N':
             datagram.read()
             print ("Raw Travel Times Recorded for %d beams" % datagram.NumReceiveBeams)
@@ -154,6 +158,12 @@ class ALLReader:
         elif TypeOfDatagram == 68: # D DEPTH
             dg = D_DEPTH(self.fileptr, NumberOfBytes)
             return dg.TypeOfDatagram, dg
+        elif TypeOfDatagram == 65: # A ATTITUDE
+            dg = A_ATTITUDE(self.fileptr, NumberOfBytes)
+            return dg.TypeOfDatagram, dg
+        elif TypeOfDatagram == 110: # n ATTITUDE
+            dg = n_ATTITUDE(self.fileptr, NumberOfBytes)
+            return dg.TypeOfDatagram, dg
         else:
             dg = UNKNOWN_RECORD(self.fileptr, NumberOfBytes, TypeOfDatagram)
             return dg.TypeOfDatagram, dg
@@ -180,8 +190,8 @@ class ALLReader:
         self.rewind()
         return navigation
 
+    # convert the datagram type from the code to a user readable string.  Handy for displaying to the user 
     def getDatagramName(typeOfDatagram):
-
         #Multibeam Data
         if (TypeOfDatagram == 'D'):
             return "D_Depth"
@@ -263,6 +273,122 @@ class UNKNOWN_RECORD:
         self.data = ""
     def read(self):
         self.data = self.fileptr.read(self.bytes)
+
+class n_ATTITUDE:
+    def __init__(self, fileptr, bytes):
+        self.TypeOfDatagram = 'n'
+        self.offset = fileptr.tell()
+        self.bytes = bytes
+        self.fileptr = fileptr
+        self.fileptr.seek(bytes, 1)
+        self.data = ""
+    
+    def read(self):
+        self.fileptr.seek(self.offset, 0)
+        rec_fmt = '=LBBHLLHHHbB'
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack_from
+        self.data = self.fileptr.read(rec_len)
+        s = rec_unpack(self.data)
+
+        self.NumberOfBytes   = s[0]
+        self.STX             = s[1]
+        self.TypeOfDatagram  = s[2]
+        self.EMModel         = s[3]
+        self.RecordDate      = s[4]
+        self.Time            = s[5]
+        self.Counter         = s[6]
+        self.SerialNumber    = s[7]
+        self.NumberEntries   = s[8]
+        self.SystemDescriptor= s[9]
+
+        rec_fmt = '=HhhhHB'            
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack
+
+        # we need to store all the attitude data in a list 
+        self.Attitude = [0 for i in range(self.NumberEntries)]
+
+        i = 0
+        while i < self.NumberEntries:
+            data = self.fileptr.read(rec_len)
+            s = rec_unpack(data)
+
+            inputTelegramSize = s[5]
+            data = self.fileptr.read(inputTelegramSize)
+            
+            self.Attitude[i] = [self.Time + s[0], s[1], s[2]/100.0, s[3]/100.0, s[4]/100.0, s[5], data]
+            i = i + 1
+
+        if self.NumberOfBytes % 2 == 0:
+            rec_fmt = '=bBH'
+            rec_len = struct.calcsize(rec_fmt)
+            rec_unpack = struct.Struct(rec_fmt).unpack_from
+            data = self.fileptr.read(rec_len)
+            s = rec_unpack(data)
+            self.ETX                = s[0]
+            self.checksum           = s[1]
+        else:
+            rec_fmt = '=BH'
+            rec_len = struct.calcsize(rec_fmt)
+            rec_unpack = struct.Struct(rec_fmt).unpack_from
+            data = self.fileptr.read(rec_len)
+            s = rec_unpack(data)
+            self.ETX                = s[1]
+            self.checksum           = s[2]
+
+            
+
+class A_ATTITUDE:
+    def __init__(self, fileptr, bytes):
+        self.TypeOfDatagram = 'A'
+        self.offset = fileptr.tell()
+        self.bytes = bytes
+        self.fileptr = fileptr
+        self.fileptr.seek(bytes, 1)
+        self.data = ""
+    
+    def read(self):
+        self.fileptr.seek(self.offset, 0)
+        rec_fmt = '=LBBHLLHHH'
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack_from
+        self.data = self.fileptr.read(rec_len)
+        s = rec_unpack(self.data)
+
+        self.NumberOfBytes   = s[0]
+        self.STX             = s[1]
+        self.TypeOfDatagram  = s[2]
+        self.EMModel         = s[3]
+        self.RecordDate      = s[4]
+        self.Time            = s[5]
+        self.Counter         = s[6]
+        self.SerialNumber    = s[7]
+        self.NumberEntries   = s[8]
+
+        rec_fmt = '=HHhhhH'            
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack
+
+        # we need to store all the attitude data in a list 
+        self.Attitude = [0 for i in range(self.NumberEntries)]
+
+        i = 0
+        while i < self.NumberEntries:
+            data = self.fileptr.read(rec_len)
+            s = rec_unpack(data)
+            self.Attitude[i] = [self.Time + s[0], s[1], s[2]/100.0, s[3]/100.0, s[4]/100.0, s[5]/100.0]
+            i = i + 1
+
+        rec_fmt = '=BBH'
+        rec_len = struct.calcsize(rec_fmt)
+        rec_unpack = struct.Struct(rec_fmt).unpack_from
+        data = self.fileptr.read(rec_len)
+        s = rec_unpack(data)
+            
+        self.ETX                = s[1]
+        self.checksum           = s[2]
+
     
 class D_DEPTH:
     def __init__(self, fileptr, bytes):
