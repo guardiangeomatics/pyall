@@ -1,0 +1,39 @@
+		<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">                    
+		<h2>ReadMe</h2>
+			<div class="col-md-6">
+				<div class="panel panel-default">
+					<div class="panel-heading"><h3>Goals of the portal</h3></div>
+					<div class="panel-body">
+						With the need to improve project performance, it has become apparent that project teams need a familiar, consistent mechanism to access project documentation while in the field.
+						To address this, the following requirements were in mind:
+						<ul>
+							<li>Must work in an offshore environment.  This can mean many things.  In this case it means without ICT support for web servers (IIS, Apache) which require some skill to opertate.</li>
+							<li>Must work from a thumb drive.  This means static HTML code, no server side scripting, no PHP, no RDBMS, No Apache, No IIS (thank god)</li>
+							<li>User needs to be able to find documents (procedures, forms etc) with ease using built in 'find in page' tool in all browsers.</li>
+							<li>Links need to be ultra reliable (auto generated is good for this).</li>
+							<li>Needs to be HTML5 compliant so it can be hosted on the cloud in the future.</li>
+							<li>Needs to work (and tested) with both IE and Chrome.</li>
+							<li>Needs to be fast for users</li>
+							<li>Needs to be very easy for project leads, and indeed any tema mamber to update (as easy as a double click)</li>
+							<li>Most of all, it needs to be useful!</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="panel panel-default">
+					<div class="panel-heading"><h3>How to edit this portal</h3></div>
+					<div class="panel-body">
+						<ul>
+							<li>Having project documents in a folder system is easy for the authors, but can be remarkably difficult for users to find things. The project portal permits the document authors to use a folder system to compile all project documentation into a single location.</li>
+							<li>To build the web portal, we use an automated scan-and-publish script, written in python.  If you have never used python youtube is your friend.</li>
+							<li>To run a python script, you need to have python 3.4 or higher installed on your pc. download python here: <a href="http://python.org"> python download</a></li>
+							<li>To build your project documentation, simply double click on the 'buildProjectDocumentatiton.py' script in the root folder of your portal.</li>
+							<li>running the build process will automatically scan all subfolders, compile a list of any and all documents in those folders, create a series of links and burn them into the index.html page in the root of the project</li>
+							<li>It will only take a few seconds to rebuild your portal.  This means you can do it every time you add a new document.</li>
+							<li>This can be used to add daily operatins reports, toolbox talks, weather reports, anything.</li>
+							<li>If you wish to publish the portal across the entire vessel, an opensource web server such as nginx is recommended.  This is very esy to use and only takes moments to install.</li>
+						</ul>
+					</div>
+				</div>
+			</div>
