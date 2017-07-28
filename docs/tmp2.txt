@@ -1,0 +1,49 @@
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+	<h2 id="new">Whats new</h2>
+</div>
+  <table class="table">
+    <tbody>
+    <tr> <th>FileName</th> <th>Date</th> <th>Status</th> </tr>
+      <tr>
+        <td><a href=".//FSPTY-BMS.html">FSPTY-BMS.html</a></td>
+        <td>13/03/2017</td>
+        <td>released just now</td>
+      <tr>
+        <td><a href=".//sidebarmenu.txt">sidebarmenu.txt</a></td>
+        <td>13/03/2017</td>
+        <td>released just now</td>
+      <tr>
+        <td><a href=".//dropdownmenu.txt">dropdownmenu.txt</a></td>
+        <td>13/03/2017</td>
+        <td>released just now</td>
+      <tr>
+        <td><a href=".//buildFSPTYBMS.py">buildFSPTYBMS.py</a></td>
+        <td>13/03/2017</td>
+        <td>released just now</td>
+      <tr>
+        <td><a href=".//ZippedBMS%5CAll%20in%20One%5CFugro-BMS.zip">Fugro-BMS.zip</a></td>
+        <td>13/03/2017</td>
+        <td>released a minute ago</td>
+      <tr>
+        <td><a href=".//09.Workshop%5CPreparation%20%26%20Testing%5CDesktop%20PC%20Workshop%20Equipment%20Testing%20Checklist%20%28WS-CL11%29.pdf">Desktop PC Workshop Equipment Testing Checklist (WS-CL11).pdf</a></td>
+        <td>09/03/2017</td>
+        <td>released 4 days ago</td>
+      <tr>
+        <td><a href=".//09.Workshop%5CPreparation%20%26%20Testing%5CAQUALogger%20520%20Workshop%20Equipment%20Testing%20Checklist%20%28%20%28WS-CL10%29.pdf">AQUALogger 520 Workshop Equipment Testing Checklist ( (WS-CL10).pdf</a></td>
+        <td>09/03/2017</td>
+        <td>released 4 days ago</td>
+      <tr>
+        <td><a href=".//06.IMS%5CIMS%20Procedures%5CNonconformance%20and%20Corrective%20Action%20Procedure%20%28IMS-PR102%29.pdf">Nonconformance and Corrective Action Procedure (IMS-PR102).pdf</a></td>
+        <td>08/03/2017</td>
+        <td>released 5 days ago</td>
+      <tr>
+        <td><a href=".//06.IMS%5CIMS%20Processes%5CNonconformance%20and%20Corrective%20Action%20Process%20%28IMS-P102%29.pdf">Nonconformance and Corrective Action Process (IMS-P102).pdf</a></td>
+        <td>08/03/2017</td>
+        <td>released 5 days ago</td>
+      <tr>
+        <td><a href=".//06.IMS%5CIMS%20Procedures%5CDocument%20Control%20Procedure%20%28IMS-PR751%29.pdf">Document Control Procedure (IMS-PR751).pdf</a></td>
+        <td>08/03/2017</td>
+        <td>released 5 days ago</td>
+    </tbody>
+  </table>
+</div>
