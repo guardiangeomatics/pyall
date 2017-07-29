@@ -14,7 +14,7 @@ def makeListing( folder):
 	s = ""
 	#open the table	
 	s += "<div class=\"col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main\">\n"
-	s += "	<h2 id=\"" + folder + "\">" + folder + "</h2>\n"
+	s += "	<h2 id=\"" + patchurl(folder) + "\">" + folder + "</h2>\n"
 	s += "</div>\n"	
 	
 	# if a html file exists in the parts folder, we merge it here.  
