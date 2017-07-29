@@ -9,6 +9,10 @@ __pycache__/
 !_*/
 
 
+#HTML files
+index.html
+
+
 # C extensions
 *.so
 
