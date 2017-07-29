@@ -75,7 +75,7 @@ scan.mergeFile(outputFileName,"./_parts/readme.html")
 print("Adding the closing tags to the page...")
 scan.mergeFile(outputFileName,"./_parts/99lastPart.html")
 
-print("Zipping the entire Portal into a all-in-one so users can self serve...")
-zBMS.zipEntireBMS(".")
+# print("Zipping the entire Portal into a all-in-one so users can self serve...")
+# zBMS.zipEntireBMS(".")
 
 print("Complete;-)")
