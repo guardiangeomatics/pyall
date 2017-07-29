@@ -23,14 +23,16 @@ def zipdir(path, ziph):
 					ziph.write(os.path.join(root, file))		
 		
 def zipEntireBMS(path):
-	destinationZip = "./ZippedBMS/All in One/Fugro-BMS.zip"
-	if os.path.isfile(destinationZip):
-		print ("deleting old zip file from bms...")
-		os.remove(destinationZip)
-	print ("creating new zip file of entire bms.  This will take a couple of  minutes to be patient.  Will notify you when complete...")
-	zipf = zipfile.ZipFile(destinationZip, 'w')
-	zipdir(path, zipf)
-	zipf.close()
-	print ("Completed making the zip version of the bms. All good.")
-	return
-	
+    directory = "./ZippedBMS/All in One/"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    destinationZip = os.path.join (directory + "Fugro-BMS.zip")
+    if os.path.isfile(destinationZip):
+        print ("deleting old zip file from bms...")
+        os.remove(destinationZip)
+    print ("creating new zip file of entire bms.  This will take a couple of  minutes to be patient.  Will notify you when complete...")
+    zipf = zipfile.ZipFile(destinationZip, 'w')
+    zipdir(path, zipf)
+    zipf.close()
+    print ("Completed making the zip version of the bms. All good.")
+    return

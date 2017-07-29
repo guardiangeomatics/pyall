@@ -16,7 +16,7 @@ def convert(name):
 def loadCSVFile(fileName):
 	# 2do pkpk skip multiple commas in the text file.  we can only have 1 comma per line or the dict does not work
 	with open(fileName, 'r') as f:
-		reader = csv.reader(f)
+		reader = csv.reader(f, delimiter=',', quotechar='"')
 		data = dict(reader)
 	return data
 

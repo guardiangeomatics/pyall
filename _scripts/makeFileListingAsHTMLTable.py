@@ -118,7 +118,8 @@ def makeListing2SideBarMenu( folder):
 	# add sub menu
 	for dirname, dirnames, filenames in os.walk("./" + folder + "/"):
 		if (len(filenames) > 0):
-			s += "							<li> <a href=\"#" + patchurl(os.path.basename(dirname)) + "\">" + patchurlText(os.path.basename(dirname)) + "</a> </li>\n"
+			if len(os.path.basename(dirname)) > 0:
+				s += "							<li> <a href=\"#" + patchurl(os.path.basename(dirname)) + "\">" + patchurlText(os.path.basename(dirname)) + "</a> </li>\n"
 	
 	s += "						</ul><!--close the submenu list-->\n"
 	# s += "					</li><!--do bugger all-->\n"

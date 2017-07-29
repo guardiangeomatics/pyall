@@ -16,7 +16,7 @@ import whatsNew
 
 # import repairMenu
 outputFileName = "index.html"
-ignoreFolders = ['_parts', 'images', '_trash', 'bootstrap', '_scripts', '__pychache__', 'aspnet_client', '.vscode']
+ignoreFolders = ['_parts', 'images', '_trash', '_bootstrap', '_scripts', '__pychache__', 'aspnet_client', '.vscode', '.git']
 
 print("Starting to compile the Project Documentation...")
 print("compiling static parts..")
@@ -55,6 +55,7 @@ print(compileStr)
 scan.wordSearchReplace(outputFileName, "compileInfo", compileStr )
 scan.wordSearchReplace(outputFileName, "projectname", projectconfig['projectname'] )
 scan.wordSearchReplace(outputFileName, "projectsummary", projectconfig['projectsummary'] )
+scan.wordSearchReplace(outputFileName, "browsertabname", projectconfig['browsertabname'] )
 
 scan.mergeFile(outputFileName,"tmp.txt")
 os.remove("tmp.txt")
