@@ -1,5 +1,5 @@
 projectid, GP1600
 projectname, NMSA Hydrographic survey
 projectmanagername, Mark Sweeney
-projectsummary, Welcome to the NMSA hydrographic project.  This portal contains links to project documentation such as project execution plans
+projectsummary, Welcome to the NMSA hydrographic project.  This portal contains links to project documentation, such as project execution plans
 browsertabname, GP1600 Documentation

@@ -26,7 +26,7 @@ This will result in a new FSPTY-BMS.HTML file.  Open it in a browser to see your
 
 #Adding / Removing new files to an existing folder.
 If you wish to add or remove files to the existing folders, just use windows explorer.  Nothing special there.
-You can even use sub folder if you prefer, but there is a restriction to 2 levels, ie .\management\classA\mydoc.doc is ok, but do not go any further down.
+You can even use sub folder if you prefer, but there is a RESTRICTION TO 2 LEVELS, ie .\management\classA\mydoc.pdf is ok, but do not go any deeper down.
 Once you have updated the folders with the new files, you need to re-compile the BMS as shown above.
 
 #Adding static text to existing BMS
