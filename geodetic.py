@@ -297,7 +297,7 @@ def calculateGeographicalPositionFromRangeBearing(latitude1, longitude1, alpha1T
         longitude2    = longitude2    * 45.0 / piD4
         alpha21    = alpha21    * 45.0 / piD4
 
-        return latitude2,  longitude2,  alpha21 
+        return longitude2, latitude2, alpha21 
 
   # END of Vincenty's Direct formulae
 
