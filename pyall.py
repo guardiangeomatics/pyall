@@ -99,7 +99,7 @@ def main():
         if typeOfDatagram == 'X':
             datagram.read()
             nadirBeam = int(datagram.NBeams / 2)
-            # print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth)))
+            print (("Nadir Depth: %.3f AcrossTrack %.3f TransducerDepth %.3f" % (datagram.Depth[nadirBeam], datagram.AcrossTrackDistance[nadirBeam], datagram.TransducerDepth)))
             pingCount += 1
             continue
 
