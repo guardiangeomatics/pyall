@@ -1759,12 +1759,12 @@ class X_DEPTH:
 		self.typeOfDatagram  			= chr(s[2])
 		self.EMModel		 			= s[3]
 		self.RecordDate	  				= s[4]
-		self.Time						= s[5]/1000
+		self.Time						= s[5] / 1000.
 		self.Counter		 			= s[6]
 		self.SerialNumber				= s[7]
 
-		self.Heading		 			= float (s[8] / 100)
-		self.SoundSpeedAtTransducer 	= float (s[9] / 10)
+		self.Heading		 			= s[8] / 100.0
+		self.SoundSpeedAtTransducer 	= s[9] / 10.0
 		self.TransducerDepth			= s[10]
 		self.NBeams				 		= s[11]
 		self.NValidDetections			= s[12]
@@ -1792,14 +1792,14 @@ class X_DEPTH:
 			data = self.fileptr.read(rec_len)
 			s = rec_unpack(data)
 			self.Depth[i] 							= s[0]
-			self.AcrossTrackDistance[i] 			=  s[1]
+			self.AcrossTrackDistance[i] 			= s[1]
 			self.AlongTrackDistance[i] 				= s[2]
 			self.DetectionWindowsLength[i] 			= s[3]
-			self.QualityFactor[i] 					=  s[4]
-			self.BeamIncidenceAngleAdjustment[i] 	=  float (s[5] / 10)
+			self.QualityFactor[i] 					= s[4]
+			self.BeamIncidenceAngleAdjustment[i] 	= s[5] / 10.0
 			self.DetectionInformation[i] 			= s[6]
-			self.RealtimeCleaningInformation[i] 	=  s[7]
-			self.Reflectivity[i] 					= float (s[8] / 10)
+			self.RealtimeCleaningInformation[i] 	= s[7]
+			self.Reflectivity[i] 					= s[8] / 10.0
 
 			# now do some sanity checks.  We have examples where the Depth and Across track values are NaN
 			if (math.isnan(self.Depth[i])):
@@ -2082,8 +2082,11 @@ class k_WATERCOLUMN:
 	def dr_meters(self):
 		return [self.SoundSpeed * dr / (self.SampleFrequency*2) for dr in self.RX_DetectedRange]
 
+	def r_max(self):
+		return self.SoundSpeed * max(self.RX_DetectedRange) / (self.SampleFrequency*2)
+
 ###############################################################################
-# TIME HELPER FUNCTIONS
+# TIME HELPER FUNCTIONSc
 ###############################################################################
 def to_timestamp(dateObject):
 	return (dateObject - datetime(1970, 1, 1)).total_seconds()
