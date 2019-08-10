@@ -114,6 +114,10 @@ def main():
 			datagram.read()
 			continue
 
+		if typeOfDatagram == 'k':
+			datagram.read()
+			continue
+
 	print("Read Duration: %.3f seconds, pingCount %d" % (time.time() - start_time, pingCount)) # print the processing time. It is handy to keep an eye on processing performance.
 
 	r.rewind()
@@ -278,6 +282,9 @@ class ALLReader:
 			return dg.typeOfDatagram, dg
 		if typeOfDatagram == 'Y': # Y_SeabedImage
 			dg = Y_SEABEDIMAGE(self.fileptr, numberOfBytes)
+			return dg.typeOfDatagram, dg
+		if typeOfDatagram == 'k': # k_WaterColumn
+			dg = k_WATERCOLUMN(self.fileptr, numberOfBytes)
 			return dg.typeOfDatagram, dg
 		else:
 			dg = UNKNOWN_RECORD(self.fileptr, numberOfBytes, typeOfDatagram)
@@ -1752,12 +1759,12 @@ class X_DEPTH:
 		self.typeOfDatagram  			= chr(s[2])
 		self.EMModel		 			= s[3]
 		self.RecordDate	  				= s[4]
-		self.Time						= s[5]/1000
+		self.Time						= s[5] / 1000.
 		self.Counter		 			= s[6]
 		self.SerialNumber				= s[7]
 
-		self.Heading		 			= float (s[8] / 100)
-		self.SoundSpeedAtTransducer 	= float (s[9] / 10)
+		self.Heading		 			= s[8] / 100.0
+		self.SoundSpeedAtTransducer 	= s[9] / 10.0
 		self.TransducerDepth			= s[10]
 		self.NBeams				 		= s[11]
 		self.NValidDetections			= s[12]
@@ -1785,14 +1792,14 @@ class X_DEPTH:
 			data = self.fileptr.read(rec_len)
 			s = rec_unpack(data)
 			self.Depth[i] 							= s[0]
-			self.AcrossTrackDistance[i] 			=  s[1]
+			self.AcrossTrackDistance[i] 			= s[1]
 			self.AlongTrackDistance[i] 				= s[2]
 			self.DetectionWindowsLength[i] 			= s[3]
-			self.QualityFactor[i] 					=  s[4]
-			self.BeamIncidenceAngleAdjustment[i] 	=  float (s[5] / 10)
+			self.QualityFactor[i] 					= s[4]
+			self.BeamIncidenceAngleAdjustment[i] 	= s[5] / 10.0
 			self.DetectionInformation[i] 			= s[6]
-			self.RealtimeCleaningInformation[i] 	=  s[7]
-			self.Reflectivity[i] 					= float (s[8] / 10)
+			self.RealtimeCleaningInformation[i] 	= s[7]
+			self.Reflectivity[i] 					= s[8] / 10.0
 
 			# now do some sanity checks.  We have examples where the Depth and Across track values are NaN
 			if (math.isnan(self.Depth[i])):
@@ -1880,10 +1887,10 @@ class Y_SEABEDIMAGE:
 		self.SerialNumber			= s[7]
 		self.SampleFrequency		= s[8]
 		self.RangeToNormalIncidence	= s[9]
-		self.NormalIncidence		= s[10]
-		self.ObliqueBS				= s[11]
-		self.TxBeamWidth			= s[12]
-		self.TVGCrossOver			= s[13]
+		self.NormalIncidence		= float(s[10] * 0.1)  # [dB]
+		self.ObliqueBS				= float(s[11] * 0.1)  # [dB]
+		self.TxBeamWidth			= float(s[12] * 0.1)  # [deg]
+		self.TVGCrossOver			= float(s[13] * 0.1)  # [deg]
 		self.NumBeams				= s[14]
 		self.beams 					= []
 		self.numSamples 			= 0
@@ -1967,8 +1974,119 @@ class Y_SEABEDIMAGE:
 
 		return fullDatagram
 
+
+class k_WATERCOLUMN:
+	def __init__(self, fileptr, numberOfBytes):
+		self.typeOfDatagram = 'k'
+		self.offset = fileptr.tell()
+		self.numberOfBytes = numberOfBytes
+		self.fileptr = fileptr
+		self.fileptr.seek(numberOfBytes, 1)
+		self.data = ""
+		self.ARC = {}
+		self.BeamPointingAngle=[]
+
+	def read(self):
+		self.fileptr.seek(self.offset, 0)
+		rec_fmt = '=LBBHLLHHHHHHHHLhBbBxxx'
+		rec_len = struct.calcsize(rec_fmt)
+		rec_unpack = struct.Struct(rec_fmt).unpack_from
+		s = rec_unpack(self.fileptr.read(rec_len))
+
+		# self.numberOfBytes= s[0]
+		self.STX			 			= s[1]
+		self.typeOfDatagram  			= chr(s[2])
+		self.EMModel		 			= s[3]
+		self.RecordDate	  				= s[4]
+		self.Time						= float(s[5]/1000.0)
+		self.Counter		 			= s[6]
+		self.SerialNumber				= s[7]
+		self.NumberOfDatagrams			= s[8]  # Number of datagrams to complete the diagram
+		self.DatagramNumbers			= s[9]  # Current datagram index
+		self.NumTransmitSector			= s[10]  # 1 to 20 (Ntx)
+		self.NumReceiveBeamsTotal		= s[11]  # Nrx for all datagrams
+		self.NumReceiveBeams			= s[12]  # Nrx current datagram
+		self.SoundSpeed					= s[13]/10.
+		self.SampleFrequency			= s[14]/100.
+		self.TransmitHeave				= s[15]/100.
+		self.TVGFunction				= s[16]
+		self.TVGOffset					= s[17]
+		self.ScanningInfo				= s[18]
+
+
+		# TX record
+		rec_fmt 					= '=hHBx'
+		rec_len 					= struct.calcsize(rec_fmt)
+		rec_unpack 					= struct.Struct(rec_fmt).unpack
+
+		self.TX_TiltAngle = []
+		self.TX_CenterFrequency = []
+		self.TX_SectorNumber = []
+		for i in range(self.NumTransmitSector):
+			data = self.fileptr.read(rec_len)
+			tx = rec_unpack(data)
+			self.TX_TiltAngle.append(tx[0])
+			self.TX_CenterFrequency.append(tx[1])
+			self.TX_SectorNumber.append(tx[2])
+
+
+		# read an empty byte
+		#self.fileptr.read(1)
+
+		# RX record
+		rx_rec_fmt 		= '=hHHHBB'
+		rx_rec_len 		= struct.calcsize(rx_rec_fmt)
+		rx_rec_unpack 	= struct.Struct(rx_rec_fmt).unpack
+
+		self.RX_PointingAngle = []
+		self.RX_StartRange = []
+		self.RX_NumSamples = []
+		self.RX_DetectedRange = []
+		self.RX_TransmitSector = []
+		self.RX_BeamNumber = []
+		self.RX_Samples = []  # List of lists
+
+		tmp = []
+
+		for i in range(self.NumReceiveBeams):
+			data 					= self.fileptr.read(rx_rec_len)
+			rx 						= rx_rec_unpack(data)
+
+			tmp.append(rx[3])
+
+			self.RX_PointingAngle.append(rx[0] / 100.)
+			self.RX_StartRange.append(rx[1])
+			self.RX_NumSamples.append(rx[2])
+			self.RX_DetectedRange.append(rx[3])
+			self.RX_TransmitSector.append(rx[4])
+			self.RX_BeamNumber.append(rx[5])
+
+			rxs_rec_fmt = '={}b'.format(rx[2])
+			rxs_rec_len = struct.calcsize(rxs_rec_fmt)
+			rxs_rec_unpack = struct.Struct(rxs_rec_fmt).unpack
+			data = self.fileptr.read(rxs_rec_len)
+			rxs = rxs_rec_unpack(data)
+			self.RX_Samples.append(rxs)
+
+		# read an empty byte
+		self.fileptr.read(1)
+
+		# now read the footer
+		self.ETX, self.checksum = readFooter(self.numberOfBytes, self.fileptr)
+
 ###############################################################################
-# TIME HELPER FUNCTIONS
+	def encode(self):
+		'''Encode a water column datagram record'''
+		raise NotImplementedError('Not implemented')
+
+	def dr_meters(self):
+		return [self.SoundSpeed * dr / (self.SampleFrequency*2) for dr in self.RX_DetectedRange]
+
+	def r_max(self):
+		return self.SoundSpeed * max(self.RX_DetectedRange) / (self.SampleFrequency*2)
+
+###############################################################################
+# TIME HELPER FUNCTIONSc
 ###############################################################################
 def to_timestamp(dateObject):
 	return (dateObject - datetime(1970, 1, 1)).total_seconds()
