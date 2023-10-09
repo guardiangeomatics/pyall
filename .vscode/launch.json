@@ -7,7 +7,7 @@
             "request": "launch",
             "stopOnEntry": false,
             "program": "${file}",
-            "pythonPath": "python.exe",
+            "python": "python.exe",
             "debugOptions": [
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit",
