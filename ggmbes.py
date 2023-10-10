@@ -27,3 +27,14 @@ class GGPING:
 	###############################################################################
 	def __str__(self):
 		return pprint.pformat(vars(self))
+
+
+###############################################################################
+class GGBeam:
+	def __init__(self):
+			self.east							= 0
+			self.north							= 0
+			self.depth 							= 0
+			self.backscatter					= 0
+			self.id 							= 0
+			self.rejectionInfo1					= 0

@@ -21,7 +21,7 @@ import numpy as np
 import geodetic
 import logging
 import timeseries
-
+import ggmbes
 ###############################################################################
 def main():
     # open the ALL file for reading by creating a new allreader class and passin in the filename to open.
@@ -207,11 +207,18 @@ def    log(msg, error = False, printmsg=True):
 def computebathypointcloud(datagram, geo, beamcounter):
     '''using the MRZ datagram, efficiently compute a numpy array of the point clouds  '''
 
-    for beam in datagram.nbeams:
-        beam.east, beam.north = geo.convertToGrid((beam.deltaLongitude_deg + datagram.longitude), (beam.deltaLatitude_deg + datagram.latitude))
-        beam.depth = (beam.z_reRefPoint_m + datagram.txTransducerDepth_m) * -1.0 #invert depths so we have negative depths.
+    datagram.east, datagram.north = geo.convertToGrid((datagram.longitude), datagram.latitude)
+    for idx in range(datagram.nbeams):
+
+        beam = ggmbes.GGBeam()
+        beam.depth = datagram.depth[idx]
+        beam.east, beam.north = geodetic.calculateGridPositionFromBearingDxDy(datagram.east, datagram.north, datagram.heading, datagram.acrosstrackdistance[idx], datagram.alongtrackdistance[idx])
+
+        # beam.depth = (beam.z_reRefPoint_m + datagram.txTransducerDepth_m) * -1.0 #invert depths so we have negative depths.
         # beam.depth = beam.z_reRefPoint_m - datagram.z_waterLevelReRefPoint_m
         beam.id            = beamcounter
+        datagram.beams.append(beam)
+
         beamcounter     = beamcounter + 1
 
     npeast = np.fromiter((beam.east for beam in datagram.beams), float, count=len(datagram.beams)) #. Also, adding count=len(stars)
@@ -768,7 +775,7 @@ class A_ATTITUDE:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.numberentries = s[8]
 
@@ -865,7 +872,7 @@ class D_depth:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.heading = float(s[8] / float(100))
         self.soundspeedattransducer = float(s[9] / float(10))
@@ -959,7 +966,7 @@ class D_depth:
                              self.emmodel,
                              self.recorddate,
                              recordtime,
-                             int(self.Counter),
+                             int(self.counter),
                              int(self.serialnumber),
                              int(self.heading * 100),
                              int(self.soundspeedattransducer * 10),
@@ -1023,7 +1030,7 @@ class E_EXTRA:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.contentidentifier = s[8]
 
@@ -1102,7 +1109,7 @@ class f_RAWrange:
         self.DCorr = [0 for i in range(self.NumReceiveBeams)]
         self.TwoWayTraveltime = [0 for i in range(self.NumReceiveBeams)]
         self.reflectivity = [0 for i in range(self.NumReceiveBeams)]
-        self.RealtimeCleaningInformation = [
+        self.realtimecleaninginformation = [
             0 for i in range(self.NumReceiveBeams)]
         self.Spare = [0 for i in range(self.NumReceiveBeams)]
         self.beamnumber = [0 for i in range(self.NumReceiveBeams)]
@@ -1259,7 +1266,7 @@ class h_HEIGHT:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.Height = float(s[8] / float(100))
         self.HeightType = s[9]
@@ -1371,7 +1378,7 @@ class n_ATTITUDE:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.numberentries = s[8]
         self.Systemdescriptor = s[9]
@@ -1428,7 +1435,7 @@ class N_TRAVELtime:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.soundspeedattransducer = s[8]
         self.NumTransmitSector = s[9]
@@ -1456,7 +1463,7 @@ class N_TRAVELtime:
         self.DCorr = [0 for i in range(self.NumReceiveBeams)]
         self.TwoWayTraveltime = [0 for i in range(self.NumReceiveBeams)]
         self.reflectivity = [0 for i in range(self.NumReceiveBeams)]
-        self.RealtimeCleaningInformation = [
+        self.realtimecleaninginformation = [
             0 for i in range(self.NumReceiveBeams)]
         self.Spare = [0 for i in range(self.NumReceiveBeams)]
 
@@ -1495,7 +1502,7 @@ class N_TRAVELtime:
             self.DCorr[i] = rx_s[5]
             self.TwoWayTraveltime[i] = float(rx_s[6])
             self.reflectivity[i] = rx_s[7]
-            self.RealtimeCleaningInformation[i] = rx_s[8]
+            self.realtimecleaninginformation[i] = rx_s[8]
             self.Spare[i] = rx_s[9]
 
         rec_fmt = '=BBH'
@@ -1530,7 +1537,7 @@ class O_qualityfactor:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.nbeams = s[8]
         self.NParPerBeam = s[9]
@@ -1588,7 +1595,7 @@ class O_qualityfactor:
                              self.emmodel,
                              self.recorddate,
                              recordtime,
-                             int(self.Counter),
+                             int(self.counter),
                              int(self.serialnumber),
                              int(self.nbeams),
                              int(self.NParPerBeam),
@@ -1642,7 +1649,7 @@ class P_POSITION:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.latitude = float(s[8] / float(20000000))
         self.longitude = float(s[9] / float(10000000))
@@ -1770,7 +1777,7 @@ class R_RUNtime:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = s[5]/1000
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
 
         self.operatorStationStatus = s[8]
@@ -1883,7 +1890,7 @@ class R_RUNtime:
         header += "emmodel,"
         header += "recorddate,"
         header += "time,"
-        header += "Counter,"
+        header += "counter,"
         header += "serialnumber,"
         header += "operatorStationStatus,"
         header += "processingUnitStatus,"
@@ -1941,7 +1948,7 @@ class R_RUNtime:
         '''this function returns the runtime record in a human readmable format.  there are 2 strings returned, teh header which changes with every record and the paramters which only change when the user changes a setting.  this means we can reduce duplicate records by testing the parameters string for changes'''
         s = '%s,%d,' % (self.typeofdatagram, self.emmodel)
         s += '%s,%.3f,' % (self.recorddate, self.time)
-        s += '%d,%d,' % (self.Counter, self.serialnumber)
+        s += '%d,%d,' % (self.counter, self.serialnumber)
         s += '%s,%d,' % (self.operatorStationStatus, self.processingUnitStatus)
         s += '%d,%d,' % (self.BSPStatus, self.sonarHeadStatus)
         s += '%d,%s,%s,%d,%s,' % (self.mode, self.dualSwathMode,
@@ -2001,7 +2008,7 @@ class U_SVP:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.ProfileDate = s[8]
         self.Profiletime = s[9]
@@ -2035,7 +2042,7 @@ class X_depth:
         self.fileptr = fileptr
         self.fileptr.seek(numberofbytes, 1)
         self.data = ""
-
+        self.beams = []
 ###############################################################################
     def read(self):
         self.fileptr.seek(self.offset, 0)
@@ -2050,16 +2057,16 @@ class X_depth:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = s[5]/1000
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
 
         self.heading = float(s[8] / 100)
         self.soundspeedattransducer = float(s[9] / 10)
         self.transducerdepth = s[10]
         self.nbeams = s[11]
-        self.NValidDetections = s[12]
+        self.nvaliddetections = s[12]
         self.samplefrequency = s[13]
-        self.ScanningInfo = s[14]
+        self.scanninginfo = s[14]
         self.spare1 = s[15]
         self.spare2 = s[16]
         self.spare3 = s[17]
@@ -2067,11 +2074,11 @@ class X_depth:
         self.depth = [0 for i in range(self.nbeams)]
         self.acrosstrackdistance = [0 for i in range(self.nbeams)]
         self.alongtrackdistance = [0 for i in range(self.nbeams)]
-        self.DetectionWindowsLength = [0 for i in range(self.nbeams)]
+        self.detectionwindowslength = [0 for i in range(self.nbeams)]
         self.qualityfactor = [0 for i in range(self.nbeams)]
-        self.BeamIncidenceAngleAdjustment = [0 for i in range(self.nbeams)]
-        self.DetectionInformation = [0 for i in range(self.nbeams)]
-        self.RealtimeCleaningInformation = [0 for i in range(self.nbeams)]
+        self.beamincidenceangleadjustment = [0 for i in range(self.nbeams)]
+        self.detectioninformation = [0 for i in range(self.nbeams)]
+        self.realtimecleaninginformation = [0 for i in range(self.nbeams)]
         self.reflectivity = [0 for i in range(self.nbeams)]
 
         # # now read the variable part of the Record
@@ -2084,11 +2091,11 @@ class X_depth:
             self.depth[i] = s[0]
             self.acrosstrackdistance[i] = s[1]
             self.alongtrackdistance[i] = s[2]
-            self.DetectionWindowsLength[i] = s[3]
+            self.detectionwindowslength[i] = s[3]
             self.qualityfactor[i] = s[4]
-            self.BeamIncidenceAngleAdjustment[i] = float(s[5] / 10)
-            self.DetectionInformation[i] = s[6]
-            self.RealtimeCleaningInformation[i] = s[7]
+            self.beamincidenceangleadjustment[i] = float(s[5] / 10)
+            self.detectioninformation[i] = s[6]
+            self.realtimecleaninginformation[i] = s[7]
             self.reflectivity[i] = float(s[8] / 10)
 
             # now do some sanity checks.  We have examples where the depth and Across track values are NaN
@@ -2128,14 +2135,14 @@ class X_depth:
         # pack the header
         recordtime = int(dateToSecondsSinceMidnight(
             from_timestamp(self.time))*1000)
-        header = struct.pack(header_fmt, fulldatagrambytecount-4, self.stx, ord(self.typeofdatagram), self.emmodel, self.recorddate, recordtime, self.Counter, self.serialnumber, int(self.heading * 100),
-                             int(self.soundspeedattransducer * 10), self.transducerdepth, self.nbeams, self.NValidDetections, self.samplefrequency, self.ScanningInfo, self.spare1, self.spare2, self.spare3)
+        header = struct.pack(header_fmt, fulldatagrambytecount-4, self.stx, ord(self.typeofdatagram), self.emmodel, self.recorddate, recordtime, self.counter, self.serialnumber, int(self.heading * 100),
+                             int(self.soundspeedattransducer * 10), self.transducerdepth, self.nbeams, self.nvaliddetections, self.samplefrequency, self.scanninginfo, self.spare1, self.spare2, self.spare3)
         fulldatagram = fulldatagram + header
 
         # pack the beam summary info
         for i in range(self.nbeams):
-            bodyrecord = struct.pack(rec_fmt, self.depth[i], self.acrosstrackdistance[i], self.alongtrackdistance[i], self.DetectionWindowsLength[i], self.qualityfactor[i], int(
-                self.BeamIncidenceAngleAdjustment[i]*10), self.DetectionInformation[i], self.RealtimeCleaningInformation[i], int(self.reflectivity[i]*10), )
+            bodyrecord = struct.pack(rec_fmt, self.depth[i], self.acrosstrackdistance[i], self.alongtrackdistance[i], self.detectionwindowslength[i], self.qualityfactor[i], int(
+                self.beamincidenceangleadjustment[i]*10), self.detectioninformation[i], self.realtimecleaninginformation[i], int(self.reflectivity[i]*10), )
             fulldatagram = fulldatagram + bodyrecord
 
         systemdescriptor = 1
@@ -2177,7 +2184,7 @@ class Y_SEABEDIMAGE:
         self.emmodel = s[3]
         self.recorddate = s[4]
         self.time = float(s[5]/1000.0)
-        self.Counter = s[6]
+        self.counter = s[6]
         self.serialnumber = s[7]
         self.samplefrequency = s[8]
         self.rangeToNormalIncidence = s[9]
@@ -2243,7 +2250,7 @@ class Y_SEABEDIMAGE:
         # pack the header
         recordtime = int(dateToSecondsSinceMidnight(
             from_timestamp(self.time))*1000)
-        header = struct.pack(header_fmt, fulldatagrambytecount-4, self.stx, ord(self.typeofdatagram), self.emmodel, self.recorddate, recordtime, self.Counter,
+        header = struct.pack(header_fmt, fulldatagrambytecount-4, self.stx, ord(self.typeofdatagram), self.emmodel, self.recorddate, recordtime, self.counter,
                              self.serialnumber, self.samplefrequency, self.rangeToNormalIncidence, self.NormalIncidence, self.ObliqueBS, self.TxBeamWidth, self.TVGCrossOver, self.NumBeams)
         fulldatagram = fulldatagram + header
 

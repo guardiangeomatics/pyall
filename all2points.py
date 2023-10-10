@@ -70,17 +70,17 @@ def main():
 
 	#make an output folder
 	if len(args.odir) == 0:
-		args.odir = os.path.join(args.inputfolder, str("GGOutlier_%s" % (time.strftime("%Y%m%d-%H%M%S"))))
+		args.odir = os.path.join(args.inputfolder, str("all2point_%s" % (time.strftime("%Y%m%d-%H%M%S"))))
 	makedirs(args.odir)
 
-	logging.basicConfig(filename = os.path.join(args.odir,"allclean_log.txt"), level=logging.INFO)
+	logging.basicConfig(filename = os.path.join(args.odir,"all2point_log.txt"), level=logging.INFO)
 	log("configuration: %s" % (str(args)))
 	log("Output Folder: %s" % (args.odir))
 
 	results = []
 	if args.cpu == '1':
 		for file in matches:
-			allcleaner(file, args)
+			all2point(file, args)
 	else:
 		multiprocesshelper.log("Files to Import: %d" %(len(matches)))		
 		cpu = multiprocesshelper.getcpucount(args.cpu)
@@ -88,7 +88,7 @@ def main():
 
 		pool = mp.Pool(cpu)
 		multiprocesshelper.g_procprogress.setmaximum(len(matches))
-		poolresults = [pool.apply_async(allcleaner, (file, args), callback=multiprocesshelper.mpresult) for file in matches]
+		poolresults = [pool.apply_async(all2point, (file, args), callback=multiprocesshelper.mpresult) for file in matches]
 		pool.close()
 		pool.join()
 		# for idx, result in enumerate (poolresults):
@@ -96,7 +96,7 @@ def main():
 		# 	print (result._value)
 
 ############################################################
-def allcleaner(filename, args):
+def all2point(filename, args):
 	'''we will try to auto clean beams by extracting the beam xyzF flag data and attempt to clean in scipy'''
 	'''we then set the beam flags to reject files we think are outliers and write the all file to a new file'''
 
@@ -120,25 +120,16 @@ def allcleaner(filename, args):
 	pointcloud = pyall.loaddata(filename, args)
 	xyz = np.column_stack([pointcloud.xarr, pointcloud.yarr, pointcloud.zarr, pointcloud.qarr, pointcloud.idarr])
 
-	if args.verbose:
-		#report on RAW POINTS
-		outfile = os.path.join(args.odir, os.path.basename(filename) + "_R.txt")
-		# xyz[:,2] /= ZSCALE
-		np.savetxt(outfile, xyz, fmt='%.2f, %.3f, %.4f', delimiter=',', newline='\n')
-		fname = lashelper.txt2las(outfile)
-		#save as a tif file...
-		outfilename = os.path.join(outfile + "_depth.tif")
-		lashelper.lasgrid4( fname, outfilename, resolution=1, epsg=args.epsg)
-		fileutils.deletefile(outfile)
-		log ("Created LAZ file of input raw points: %s " % (fname))
-		outfilename = os.path.join(outfile + "_Raw_depth.tif")
-		# raw = np.asarray(pcd.points)
-		# raw[:,2] /= ZSCALE
-		# cloud2tif.saveastif(outfilename, geo, raw, fill=False)
-		# outfilename = os.path.join(outfile + "_R_NEW.tif")
-		# cloud2tif.pcd2meantif2(outfilename, geo, raw, fill=False)
+	#report on RAW POINTS
+	outfile = os.path.join(args.odir, os.path.basename(filename) + "_R.txt")
+	# xyz[:,2] /= ZSCALE
+	# np.savetxt(outfile, xyz, fmt='%.2f, %.3f, %.4f', delimiter=',', newline='\n')
+	np.savetxt(outfile, (xyz), fmt='%.10f', delimiter=',')
 
-	log("Cleaning complete at: %s" % (datetime.now()))
+	outfilename = os.path.join(outfile + "_Raw_depth.tif")
+	cloud2tif.saveastif(outfilename, geo, xyz, resolution=2, fill=False)
+
+	log("Read complete at: %s" % (datetime.now()))
 	return outfilename
 
 ###############################################################################
