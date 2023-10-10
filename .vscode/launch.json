@@ -8,12 +8,7 @@
             "stopOnEntry": false,
             "program": "${file}",
             "python": "python.exe",
-            "debugOptions": [
-                "WaitOnAbnormalExit",
-                "WaitOnNormalExit",
-                "RedirectOutput"
-            ],
-            "args": ["C:/development/python/0004_20110307_041009.all"]
+            "args": ["-i", "C:/development/python/0004_20110307_041009.all", "-cpu", "1"]
         }
    ]
 }
