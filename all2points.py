@@ -122,8 +122,6 @@ def all2point(filename, args):
 
 	#report on RAW POINTS
 	outfile = os.path.join(args.odir, os.path.basename(filename) + "_R.txt")
-	# xyz[:,2] /= ZSCALE
-	# np.savetxt(outfile, xyz, fmt='%.2f, %.3f, %.4f', delimiter=',', newline='\n')
 	np.savetxt(outfile, (xyz), fmt='%.10f', delimiter=',')
 
 	outfilename = os.path.join(outfile + "_Raw_depth.tif")
