@@ -8,7 +8,6 @@
 # See readme.md for more details
 
 import sys
-import ctypes
 import math
 import pprint
 import struct
